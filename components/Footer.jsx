@@ -32,7 +32,7 @@ export default function Footer() {
               </p>
               <p className="flex items-center gap-2">
                 <FaWhatsapp className="text-green-500 w-4 h-4 flex-shrink-0" />
-                <a href="https://wa.me/917339572103" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">+91 73395 72103</a>
+                <a href="https://wa.me/919003620450" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">+91  90036 20450</a>
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function Footer() {
             <a href="https://www.instagram.com/hunterclothing.in/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white text-gray-400 transition">
               <FiInstagram />
             </a>
-            <a href="https://wa.me/917339572103" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:text-green-500 text-gray-400 transition">
+            <a href="https://wa.me/919003620450" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:text-green-500 text-gray-400 transition">
               <FaWhatsapp />
             </a>
           </div>

@@ -53,7 +53,7 @@ export default function SupportPage() {
 
     // Formatted message payload for WhatsApp
     const text = `Hi Hunter Mens Wear,\n\nName: ${name.trim()}\nEmail: ${email.trim()}\n\nInquiry Message:\n${message.trim()}`;
-    const whatsappUrl = `https://wa.me/917339572103?text=${encodeURIComponent(text)}`;
+    const whatsappUrl = `https://wa.me/919003620450?text=${encodeURIComponent(text)}`;
 
     window.open(whatsappUrl, "_blank");
 
@@ -120,7 +120,7 @@ export default function SupportPage() {
           </a>
 
           <a
-            href="https://wa.me/917339572103"
+            href="https://wa.me/919003620450"
             target="_blank"
             rel="noopener noreferrer"
             className="p-5 sm:p-6 bg-green-50/60 rounded-2xl sm:rounded-3xl border border-green-200/80 text-center hover:bg-green-100/80 transition group"
