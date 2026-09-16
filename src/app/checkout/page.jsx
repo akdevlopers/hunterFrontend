@@ -438,24 +438,7 @@ function CheckoutPageContent() {
 
         const rzpOrderId = responseData.razorpay_order_id;
 
-        // Option 2: Redirect directly to backend payment link for automatic backend capture & database update
-        if (responseData.payment_link) {
-          setOrderId(finalOrderId);
-          setOrderData(responseData);
-          addOrder({
-            orderId: finalOrderId,
-            items: checkoutItems,
-            grandTotal: responseData.final_price || grandTotal,
-            shippingAddress: activeShipping,
-            paymentMethod,
-            responseData: responseData,
-          });
-          if (!isBuyNow) clearCart();
-          window.location.href = responseData.payment_link;
-          return;
-        }
-
-        // Fallback: Open Razorpay JS popup modal directly if payment_link is not provided
+        // Open Razorpay JS popup modal directly using order_id
         const scriptLoaded = await loadRazorpayScript();
         if (scriptLoaded && typeof window !== "undefined" && window.Razorpay) {
           const targetPayAmount = isAdvancePay
@@ -508,6 +491,13 @@ function CheckoutPageContent() {
 
           const rzp = new window.Razorpay(options);
           rzp.open();
+          return;
+        } else if (responseData.payment_link) {
+          // Fallback redirect to payment link if script failed
+          setOrderId(finalOrderId);
+          setOrderData(responseData);
+          if (!isBuyNow) clearCart();
+          window.location.href = responseData.payment_link;
           return;
         }
 
