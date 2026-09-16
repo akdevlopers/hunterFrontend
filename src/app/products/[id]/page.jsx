@@ -535,8 +535,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                   </button>
                   {activeTab === "details" && (
                     <div className="mt-3 text-xs text-gray-600 space-y-2 leading-relaxed">
-                      <p>{liveProduct.description || "High premium heavyweight cotton streetwear fit."}</p>
-                      <p>Weight: {liveProduct.product_weight || "0.600"} kg</p>
+                      <p>{liveProduct.description || "Carefully crafted using premium-quality fabrics and materials selected to suit each product. Designed for lasting comfort, durability and effortless everyday style, every piece carries the distinctive Hunter edge"}</p>
                     </div>
                   )}
                 </div>

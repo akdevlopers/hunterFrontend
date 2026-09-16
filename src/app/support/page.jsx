@@ -129,7 +129,7 @@ export default function SupportPage() {
               <FaWhatsapp className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <h3 className="text-xs sm:text-sm font-extrabold text-green-900 uppercase">WhatsApp Chat</h3>
-            <p className="text-[11px] sm:text-xs text-green-700 mt-1 font-semibold">+91 73395 72103</p>
+            <p className="text-[11px] sm:text-xs text-green-700 mt-1 font-semibold">+91 90036 20450</p>
           </a>
         </div>
 

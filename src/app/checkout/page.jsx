@@ -255,7 +255,7 @@ function CheckoutPageContent() {
           },
           {
             name: "Advance_Pay",
-            label: "Advance Pay [Now You will pay Shipping Amount.Balance will pay on Delivery]",
+            label: "Advance Pay [Now you will pay the COD shipping amount only , Remaining the product amount you have to pay on delivery time]",
             advance_amount: 200,
             delivery_price: 200,
           },
@@ -289,7 +289,7 @@ function CheckoutPageContent() {
           },
           {
             name: "Advance_Pay",
-            label: "Advance Pay [Now You will pay Shipping Amount.Balance will pay on Delivery]",
+            label: "Advance Pay [Now you will pay the COD shipping amount only , Remaining the product amount you have to pay on delivery time]",
             advance_amount: 200,
             delivery_price: 200,
           },
@@ -318,7 +318,7 @@ function CheckoutPageContent() {
     0
   );
   const tax = 0;
-  const shippingCharge = paymentMethod === "Razorpay" ? deliveryPrice : 0;
+  const shippingCharge = deliveryPrice || 0;
   const grandTotal = Math.max(0, subtotal - couponDiscount + tax + shippingCharge);
 
   const handlePlaceOrder = async (e) => {
@@ -1058,7 +1058,7 @@ function CheckoutPageContent() {
                 </div>
 
                 {/* Enter Coupon Code Row */}
-                <div className="pt-2 border-t border-gray-200/80">
+                {/* <div className="pt-2 border-t border-gray-200/80">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -1081,7 +1081,7 @@ function CheckoutPageContent() {
                       {couponMsg}
                     </p>
                   )}
-                </div>
+                </div> */}
 
                 {/* Subtotal, Coupon, Tax, Shipping, Total Rows */}
                 <div className="space-y-2.5 pt-3 border-t border-gray-200 text-xs text-gray-700 font-medium">
@@ -1090,20 +1090,20 @@ function CheckoutPageContent() {
                     <span className="font-extrabold text-black">₹{subtotal.toLocaleString("en-IN")}</span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span>Coupon</span>
                     <span className="font-extrabold text-black">
                       {couponDiscount > 0 ? `- ₹${couponDiscount.toLocaleString("en-IN")}` : "- ₹0,00"}
                     </span>
-                  </div>
+                  </div> */}
 
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span>Tax</span>
                     <span className="font-extrabold text-black">₹0,00</span>
-                  </div>
+                  </div> */}
 
-                  {/* If Razorpay / Prepaid: show Shipping Amount */}
-                  {paymentMethod === "Razorpay" && deliveryPrice > 0 && (
+                  {/* Show Shipping Amount for Prepaid and Advance Pay */}
+                  {deliveryPrice > 0 && (
                     <div className="flex justify-between">
                       <span>Shipping Amount</span>
                       <span className="font-extrabold text-black">₹{deliveryPrice.toLocaleString("en-IN")}</span>
