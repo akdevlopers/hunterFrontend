@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use, useRef } from "react";
+import { useState, useEffect, use, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +29,21 @@ function formatShortSize(sizeStr) {
   return match ? match[1] : str;
 }
 
+function getProductImageUrl(img) {
+  if (!img) return null;
+  if (typeof img === "string") return img.trim();
+  if (img.image_url && typeof img.image_url === "string" && img.image_url.trim() !== "") {
+    return img.image_url.trim();
+  }
+  if (img.image_path && typeof img.image_path === "string" && img.image_path.trim() !== "") {
+    return img.image_path.startsWith("http") ? img.image_path.trim() : `https://meetay.com/${img.image_path.trim()}`;
+  }
+  if (img.image && typeof img.image === "string" && img.image.trim() !== "") {
+    return img.image.trim();
+  }
+  return null;
+}
+
 export default function ProductDetailPage({ params: paramsPromise }) {
   const params = use(paramsPromise);
   const productIdOrSlug = params.id;
@@ -40,6 +55,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
   const [variants, setVariants] = useState([]);
   const [relatedProductsList, setRelatedProductsList] = useState([]);
   const [productImages, setProductImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedSize, setSelectedSize] = useState("");
@@ -50,6 +66,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
   const [showStickyBottomBar, setShowStickyBottomBar] = useState(true);
   const relatedProductsRef = useRef(null);
   const relatedScrollRef = useRef(null);
+  const thumbnailScrollRef = useRef(null);
 
   const scrollLeftRelated = () => {
     if (relatedScrollRef.current) {
@@ -62,6 +79,34 @@ export default function ProductDetailPage({ params: paramsPromise }) {
       relatedScrollRef.current.scrollBy({ left: 340, behavior: "smooth" });
     }
   };
+
+  const scrollLeftThumbnails = () => {
+    if (thumbnailScrollRef.current) {
+      thumbnailScrollRef.current.scrollBy({ left: -160, behavior: "smooth" });
+    }
+  };
+
+  const scrollRightThumbnails = () => {
+    if (thumbnailScrollRef.current) {
+      thumbnailScrollRef.current.scrollBy({ left: 160, behavior: "smooth" });
+    }
+  };
+
+  // Enable mouse wheel scrolling on horizontal thumbnail gallery
+  useEffect(() => {
+    const el = thumbnailScrollRef.current;
+    if (!el) return;
+
+    const onWheel = (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [liveProduct, productImages]);
 
   // Show mobile sticky bottom bar on page open, and hide when scrolling down to Related Products section
   useEffect(() => {
@@ -86,6 +131,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
   useEffect(() => {
     async function loadDetails() {
       setIsLoading(true);
+      setSelectedImage(null);
       let res = await fetchProductDetails(productIdOrSlug);
 
       // Smart Fallback: If numeric ID was passed (e.g. 4604) and server returned 0 "Product not found",
@@ -169,6 +215,84 @@ export default function ProductDetailPage({ params: paramsPromise }) {
     }
   }, [selectedSize, availableStock]);
 
+  const isSaved = liveProduct ? isInWishlist(liveProduct.id) : false;
+  const coverImg = liveProduct
+    ? (liveProduct.cover_image_url && liveProduct.cover_image_url.trim() !== "" ? liveProduct.cover_image_url.trim() : null) ||
+      (liveProduct.cover_image_path && liveProduct.cover_image_path.trim() !== "" ? `https://meetay.com/${liveProduct.cover_image_path.trim()}` : null)
+    : null;
+
+  // Unified Gallery Images List: use productImages if present, otherwise fallback to coverImg
+  const allGalleryImages = useMemo(() => {
+    if (Array.isArray(productImages) && productImages.length > 0) {
+      const list = [];
+      productImages.forEach((img) => {
+        const url = getProductImageUrl(img);
+        if (url && !list.includes(url)) {
+          list.push(url);
+        }
+      });
+      if (list.length > 0) return list;
+    }
+    return coverImg ? [coverImg] : [];
+  }, [coverImg, productImages]);
+
+  // Current display image is selectedImage if chosen, otherwise first gallery image or coverImg
+  const activeDisplayImage = selectedImage || (allGalleryImages.length > 0 ? allGalleryImages[0] : coverImg);
+  const [isAutoSlidePaused, setIsAutoSlidePaused] = useState(false);
+
+  // Automatic image sliding every 3.5 seconds (resumes when unpaused)
+  useEffect(() => {
+    if (allGalleryImages.length <= 1 || isAutoSlidePaused) return;
+
+    const timer = setInterval(() => {
+      setSelectedImage((prevSelected) => {
+        const currentUrl = prevSelected || allGalleryImages[0];
+        const currentIndex = allGalleryImages.indexOf(currentUrl);
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % allGalleryImages.length : 0;
+        const nextImg = allGalleryImages[nextIndex];
+
+        // Auto scroll active thumbnail into view
+        if (thumbnailScrollRef.current && thumbnailScrollRef.current.children) {
+          const activeThumbEl = thumbnailScrollRef.current.children[nextIndex];
+          if (activeThumbEl) {
+            activeThumbEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+          }
+        }
+        return nextImg;
+      });
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [allGalleryImages, isAutoSlidePaused]);
+
+  const handlePrevImage = (e) => {
+    if (e) e.stopPropagation();
+    if (allGalleryImages.length <= 1) return;
+    const currentUrl = activeDisplayImage || allGalleryImages[0];
+    const currentIndex = allGalleryImages.indexOf(currentUrl);
+    const prevIndex = (currentIndex - 1 + allGalleryImages.length) % allGalleryImages.length;
+    const prevImg = allGalleryImages[prevIndex];
+    setSelectedImage(prevImg);
+    if (thumbnailScrollRef.current && thumbnailScrollRef.current.children) {
+      const el = thumbnailScrollRef.current.children[prevIndex];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  };
+
+  const handleNextImage = (e) => {
+    if (e) e.stopPropagation();
+    if (allGalleryImages.length <= 1) return;
+    const currentUrl = activeDisplayImage || allGalleryImages[0];
+    const currentIndex = allGalleryImages.indexOf(currentUrl);
+    const nextIndex = (currentIndex + 1) % allGalleryImages.length;
+    const nextImg = allGalleryImages[nextIndex];
+    setSelectedImage(nextImg);
+    if (thumbnailScrollRef.current && thumbnailScrollRef.current.children) {
+      const el = thumbnailScrollRef.current.children[nextIndex];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  };
+
   if (isLoading) {
     return (
       <main className="min-h-screen bg-white">
@@ -205,10 +329,6 @@ export default function ProductDetailPage({ params: paramsPromise }) {
     );
   }
 
-  const isSaved = isInWishlist(liveProduct.id);
-  const imgUrl =
-    (liveProduct.cover_image_url && liveProduct.cover_image_url.trim() !== "" ? liveProduct.cover_image_url : null) ||
-    (liveProduct.cover_image_path && liveProduct.cover_image_path.trim() !== "" ? `https://meetay.com/${liveProduct.cover_image_path}` : null);
   const currentSalePrice = liveProduct.sale_price || liveProduct.price || 0;
   const mrpPrice = liveProduct.original_mrp !== undefined && liveProduct.original_mrp !== null ? liveProduct.original_mrp : (liveProduct.price || 0);
 
@@ -228,7 +348,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
       id: liveProduct.id,
       name: liveProduct.name,
       price: liveProduct.sale_price || liveProduct.price,
-      image: imgUrl,
+      image: activeDisplayImage || coverImg,
       variant_id: activeVariantId,
       variants: variants,
       stock: availableStock,
@@ -241,7 +361,8 @@ export default function ProductDetailPage({ params: paramsPromise }) {
   const handleBuyNow = () => {
     const safeQty = availableStock > 0 ? Math.min(quantity, availableStock) : quantity;
     const targetPrice = liveProduct.sale_price || liveProduct.price || 0;
-    const url = `/checkout?buyNow=true&id=${liveProduct.id}&slug=${encodeURIComponent(liveProduct.slug || liveProduct.id)}&size=${encodeURIComponent(selectedSize)}&qty=${safeQty}&name=${encodeURIComponent(liveProduct.name)}&price=${targetPrice}&img=${encodeURIComponent(imgUrl)}&variant_id=${activeVariantId}&stock=${availableStock}`;
+    const itemImg = activeDisplayImage || coverImg || "";
+    const url = `/checkout?buyNow=true&id=${liveProduct.id}&slug=${encodeURIComponent(liveProduct.slug || liveProduct.id)}&size=${encodeURIComponent(selectedSize)}&qty=${safeQty}&name=${encodeURIComponent(liveProduct.name)}&price=${targetPrice}&img=${encodeURIComponent(itemImg)}&variant_id=${activeVariantId}&stock=${availableStock}`;
     router.push(url);
   };
 
@@ -298,13 +419,20 @@ export default function ProductDetailPage({ params: paramsPromise }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
           
           {/* Left Column: Product Image Gallery */}
-          <div className="lg:col-span-5 flex flex-col items-center gap-4">
-            <div className="relative aspect-square sm:aspect-[3/4] w-full max-w-[450px] rounded-3xl overflow-hidden bg-[#f6f6f6] shadow-md border border-gray-100 group">
-              {imgUrl ? (
+          <div className="lg:col-span-5 flex flex-col items-center gap-3 sm:gap-4 w-full">
+            <div
+              onMouseEnter={() => setIsAutoSlidePaused(true)}
+              onMouseLeave={() => setIsAutoSlidePaused(false)}
+              onTouchStart={() => setIsAutoSlidePaused(true)}
+              onTouchEnd={() => setIsAutoSlidePaused(false)}
+              className="relative aspect-square w-full max-w-[480px] rounded-3xl overflow-hidden bg-[#f8f8f8] shadow-md border border-gray-100 flex items-center justify-center group/card"
+            >
+              {activeDisplayImage ? (
                 <img
-                  src={imgUrl}
+                  key={activeDisplayImage}
+                  src={activeDisplayImage}
                   alt={liveProduct.name || "Product"}
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover object-center transition-all duration-500 sm:scale-105"
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400 p-6 text-center">
@@ -313,17 +441,39 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                 </div>
               )}
 
+              {/* Prev / Next Slide Arrows on Main Image */}
+              {allGalleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-black flex items-center justify-center shadow-md hover:bg-black hover:text-white transition active:scale-90 opacity-80 sm:opacity-0 sm:group-hover/card:opacity-100 z-10"
+                    aria-label="Previous image"
+                  >
+                    <FiChevronLeft className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-black flex items-center justify-center shadow-md hover:bg-black hover:text-white transition active:scale-90 opacity-80 sm:opacity-0 sm:group-hover/card:opacity-100 z-10"
+                    aria-label="Next image"
+                  >
+                    <FiChevronRight className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+                </>
+              )}
+
               {/* Tag Badge */}
               {liveProduct.trending === 1 && (
-                <span className="absolute top-4 left-4 bg-black text-white text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                <span className="absolute top-4 left-4 bg-black text-white text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">
                   Trending
                 </span>
               )}
 
               {/* Wishlist Floating Button */}
               <button
-                onClick={() => toggleWishlist({ ...liveProduct, selectedSize })}
-                className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-md active:scale-95 ${
+                onClick={() => toggleWishlist({ ...liveProduct, selectedSize, image: activeDisplayImage || coverImg })}
+                className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-md active:scale-95 z-10 ${
                   isSaved
                     ? "bg-red-500 text-white"
                     : "bg-white/80 text-black hover:bg-black hover:text-white"
@@ -332,19 +482,77 @@ export default function ProductDetailPage({ params: paramsPromise }) {
               >
                 <FiHeart className={`w-5 h-5 ${isSaved ? "fill-current" : ""}`} />
               </button>
+
+              {/* Slide Indicator Dots */}
+              {allGalleryImages.length > 1 && (
+                <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 backdrop-blur-md z-10">
+                  {allGalleryImages.map((imgUrl, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedImage(imgUrl)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        activeDisplayImage === imgUrl ? "w-4 bg-white" : "w-1.5 bg-white/50"
+                      }`}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Thumbnail Gallery (if product_images present) */}
-            {productImages.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto py-2">
-                {productImages.map((img, idx) => (
+            {/* Thumbnail Gallery */}
+            {allGalleryImages.length > 1 && (
+              <div className="relative w-full max-w-[480px] group/thumbs">
+                {allGalleryImages.length > 4 && (
                   <button
-                    key={idx}
-                    className="w-16 h-20 rounded-xl overflow-hidden border border-gray-200"
+                    type="button"
+                    onClick={scrollLeftThumbnails}
+                    className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 bg-white shadow-md border border-gray-200 rounded-full items-center justify-center text-black hover:bg-black hover:text-white transition active:scale-95"
+                    aria-label="Scroll thumbnails left"
                   >
-                    <img src={img.image_url || img} alt="" className="w-full h-full object-cover" />
+                    <FiChevronLeft className="w-4 h-4" />
                   </button>
-                ))}
+                )}
+
+                <div
+                  ref={thumbnailScrollRef}
+                  className="w-full flex items-center gap-2 sm:gap-2.5 overflow-x-auto py-2 px-1 scrollbar-none select-none scroll-smooth"
+                >
+                  {allGalleryImages.map((imgItemUrl, idx) => {
+                    const isSelected = activeDisplayImage === imgItemUrl;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedImage(imgItemUrl)}
+                        className={`relative flex-shrink-0 w-16 h-16 sm:w-18 sm:h-18 rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer bg-white ${
+                          isSelected
+                            ? "border-2 border-black shadow-sm z-10"
+                            : "border border-gray-200 hover:border-gray-400 opacity-80 hover:opacity-100"
+                        }`}
+                        aria-label={`Select product image ${idx + 1}`}
+                      >
+                        <img
+                          src={imgItemUrl}
+                          alt={`${liveProduct.name || "Product"} thumbnail ${idx + 1}`}
+                          className="w-full h-full object-contain object-center p-1 pointer-events-none"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {allGalleryImages.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={scrollRightThumbnails}
+                    className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 bg-white shadow-md border border-gray-200 rounded-full items-center justify-center text-black hover:bg-black hover:text-white transition active:scale-95"
+                    aria-label="Scroll thumbnails right"
+                  >
+                    <FiChevronRight className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -333,7 +333,85 @@ function ProductsContent() {
       {/* Main Layout */}
       <div className="max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-10 py-4 sm:py-8 pb-28 lg:pb-0">
 
+        {/* Mobile Filter & Category Pills Bar */}
+        <div className="lg:hidden mb-4 space-y-2.5">
+          <div className="flex items-center gap-2">
+            {/* Filter Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen(true)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition-all flex-shrink-0 shadow-sm active:scale-95 ${
+                selectedCategory || maxPriceRange < 3000
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-black border-gray-200 hover:border-black"
+              }`}
+            >
+              <FiFilter className="w-3.5 h-3.5" />
+              <span>Filter</span>
+              {(selectedCategory || maxPriceRange < 3000) && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              )}
+            </button>
 
+            {/* Scrollable Category Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 flex-1">
+              <button
+                type="button"
+                onClick={() => handleCategorySelect("")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-all flex-shrink-0 border active:scale-95 ${
+                  !selectedCategory
+                    ? "bg-black text-white border-black shadow-sm"
+                    : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                }`}
+              >
+                All
+              </button>
+              {displayCategoriesList.map((cat) => {
+                const isSelected = String(selectedCategory) === String(cat.id);
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategorySelect(cat.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-all flex-shrink-0 border active:scale-95 ${
+                      isSelected
+                        ? "bg-black text-white border-black shadow-sm"
+                        : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Filter Chips & Clear */}
+          {(selectedCategory || maxPriceRange < 3000 || searchQuery) && (
+            <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap font-bold text-gray-600">
+                <span className="text-[10px] uppercase text-gray-400">Filters:</span>
+                {selectedCategory && (
+                  <span className="bg-white px-2 py-0.5 rounded-md border border-gray-200 text-black text-[11px]">
+                    {activeCategoryName}
+                  </span>
+                )}
+                {maxPriceRange < 3000 && (
+                  <span className="bg-white px-2 py-0.5 rounded-md border border-gray-200 text-black text-[11px]">
+                    ≤ ₹{maxPriceRange}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="text-[10px] font-black uppercase text-red-600 hover:underline tracking-wider"
+              >
+                Reset
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="grid lg:grid-cols-4 gap-8">
           {/* DESKTOP SIDEBAR FILTER */}
@@ -426,7 +504,7 @@ function ProductsContent() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                   {displayedProducts.map((product) => {
                     const imgUrl = product.cover_image_url || (product.cover_image_path ? `https://meetay.com/${product.cover_image_path}` : null);
                     const priceFormatted = `₹${(product.sale_price || product.price || 0).toLocaleString("en-IN")}`;
@@ -437,39 +515,44 @@ function ProductsContent() {
                       <Link
                         key={product.id}
                         href={`/products/${targetSlug}`}
-                        className="group cursor-pointer flex flex-col rounded-2xl transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl bg-white border border-gray-100 p-2.5"
+                        className="group cursor-pointer flex flex-col rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white border border-gray-100 p-2 sm:p-2.5"
                       >
                         <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#f6f6f6] flex items-center justify-center">
                           {imgUrl && (
                             <img
                               src={imgUrl}
                               alt={product.name}
-                              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                              className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                             />
                           )}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-500" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-300" />
                         </div>
 
-                        <div className="flex flex-col justify-between pt-3 px-1">
-                          <h3 className="text-xs sm:text-sm font-bold text-black line-clamp-1">
-                            {product.name}
-                          </h3>
-                          <span className="text-xs sm:text-sm font-black text-black mt-1">
-                            {priceFormatted}
-                          </span>
+                        <div className="flex flex-col justify-between pt-2.5 px-0.5 flex-1">
+                          <div>
+                            <h3 className="text-xs sm:text-sm font-bold text-black line-clamp-1 leading-snug">
+                              {product.name}
+                            </h3>
+                            <span className="text-xs sm:text-sm font-black text-black mt-1 block">
+                              {priceFormatted}
+                            </span>
+                          </div>
 
                           {/* Available Sizes Badges */}
                           {sizesList.length > 0 && (
                             <div className="flex items-center gap-1 mt-2 flex-wrap">
-                              <span className="text-[11px] font-bold text-black mr-0.5">Size :</span>
-                              {sizesList.map((sz) => (
+                              <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 mr-0.5">Size:</span>
+                              {sizesList.slice(0, 4).map((sz) => (
                                 <span
                                   key={sz}
-                                  className="text-[10px] font-bold text-gray-800 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded-md whitespace-nowrap"
+                                  className="text-[9px] sm:text-[10px] font-bold text-gray-800 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded-md whitespace-nowrap"
                                 >
                                   {sz}
                                 </span>
                               ))}
+                              {sizesList.length > 4 && (
+                                <span className="text-[9px] font-bold text-gray-400">+{sizesList.length - 4}</span>
+                              )}
                             </div>
                           )}
                         </div>
