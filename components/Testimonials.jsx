@@ -12,8 +12,6 @@ const reviews = [
     name: "Jaaser Shahul",
     avatar: "JS",
     avatarBg: "bg-teal-600",
-    tag: "25 reviews",
-    timeAgo: "3 years ago",
     rating: 5,
     review:
       "Hunter Mens Clothing wear is located near Vivekanandapuram,Kanyakumari.Its Started morethan 4 years ago.They have the best Zero degree perfume also.They Had 146k followers on Instagram as of now.Its the famous men clothing around Kanyakumari District.They have the Great collection of shirts, tees, hoodies, pants, accessories and perfumes are available at nominal price.The best quality deny its quality",
@@ -23,8 +21,6 @@ const reviews = [
     name: "Josephin Gabril Vibun",
     avatar: "JV",
     avatarBg: "bg-indigo-600",
-    tag: "31 reviews · 34 photos",
-    timeAgo: "Edited 6 years ago",
     rating: 5,
     review:
       "Situated near the Vivekananda puram junction. Nice shop for men clothing. Dresses are in good quality and reasonable price 👌 👌 👌 . Shipping over all over India. Nice place for shopping. Not only dress, but caps, shoes, watches, deodorants are also available. Designs are ultimate 🔥 🔥 🔥 . Enjoy shopping 👓 👔 🎩 👟 ⌚ 😸 .Now shipping over world. ...",
@@ -34,8 +30,6 @@ const reviews = [
     name: "Nishanth Ligori",
     avatar: "NL",
     avatarBg: "bg-blue-600",
-    tag: "14 reviews",
-    timeAgo: "5 years ago",
     rating: 5,
     review:
       "One of the best Hub for Men's Clothing....Great collection of shirts, tees, hoodies, pants, accessories and perfumes are available at nominal price... The best quality products... Trendy and Innovative Collections... Definitely you won't deny it's quality... Just loved it... World wide shipping service is available... Delivery at any place... Overall 5/5..",
@@ -45,8 +39,6 @@ const reviews = [
     name: "Vimal Raj",
     avatar: "VR",
     avatarBg: "bg-amber-600",
-    tag: "8 reviews",
-    timeAgo: "2 years ago",
     rating: 5,
     review:
       "I like hunter❤️ menswear .\nI purchased phants and trackpants are quality wise top level ⚡\nFast reply and best guidence 😈 🎈 product details explaining very well 👍 💯 🤝 with clearly 🔥\nThank you @Hunter men's wear 🙏 😎\n\nTrusted 💯",
@@ -56,8 +48,6 @@ const reviews = [
     name: "Pavithran Pavi",
     avatar: "P",
     avatarBg: "bg-[#b81d52]",
-    tag: "1 review",
-    timeAgo: "6 years ago",
     rating: 5,
     review:
       "Such a wonderful collection I ever seen this before.... Just love this shop.... Keep rocking hinders men's wear",
@@ -67,8 +57,6 @@ const reviews = [
     name: "Patrick Parker",
     avatar: "PP",
     avatarBg: "bg-zinc-900",
-    tag: "1 review",
-    timeAgo: "2 years ago",
     rating: 5,
     review:
       "Good shop and best offers all the best for the following years thanks for giving special offers",
@@ -78,8 +66,6 @@ const reviews = [
     name: "Gowtham S",
     avatar: "G",
     avatarBg: "bg-purple-700",
-    tag: "3 reviews",
-    timeAgo: "2 years ago",
     rating: 5,
     review:
       "Awesome shop I ever seen... 💥 Affordable price...✨ Hearted customer service...♥ ...",
@@ -89,8 +75,6 @@ const reviews = [
     name: "proud muslim",
     avatar: "p",
     avatarBg: "bg-[#0d4d3d]",
-    tag: "7 reviews",
-    timeAgo: "3 years ago",
     rating: 5,
     review:
       "High quality stuffs in very reasonable price , highly recommend store for men",
@@ -100,8 +84,6 @@ const reviews = [
     name: "Vicky Vezhaventhan",
     avatar: "VV",
     avatarBg: "bg-emerald-600",
-    tag: "11 reviews · 31 photos",
-    timeAgo: "2 years ago",
     rating: 5,
     review:
       "A very good quality nd quantity of the product.Tq so much keep hunting nanba✨ ✨ ✨",
@@ -111,8 +93,6 @@ const reviews = [
     name: "Muthukumar V.J",
     avatar: "MV",
     avatarBg: "bg-rose-700",
-    tag: "4 reviews",
-    timeAgo: "2 years ago",
     rating: 5,
     review:
       "Nice Customer Service and Fast Delivery ✨ 🔥 Keep Rocking Hunter... ...",
