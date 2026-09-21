@@ -175,7 +175,7 @@ function ProductsContent() {
           const priceB = b.sale_price || b.price || 0;
           if (sortBy === "price-low") return priceA - priceB;
           if (sortBy === "price-high") return priceB - priceA;
-          return a.id - b.id;
+          return 0;
         });
     }
 
@@ -247,7 +247,7 @@ function ProductsContent() {
 
         if (sortBy === "price-low") return priceA - priceB;
         if (sortBy === "price-high") return priceB - priceA;
-        return a.id - b.id;
+        return 0;
       });
   }, [apiProducts, allApiProducts, displayCategoriesList, sortBy, maxPriceRange, searchQuery]);
 
