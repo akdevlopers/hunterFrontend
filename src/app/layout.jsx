@@ -16,6 +16,13 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "HUNTER | Premium Men's Streetwear",
   description: "HUNTER streetwear collection - Born in the streets, engineered for men's urban culture.",
+  icons: {
+    icon: [
+      { url: "/images/hunter-icon.png", href: "/images/hunter-icon.png" },
+    ],
+    shortcut: "/images/hunter-icon.png",
+    apple: "/images/hunter-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {

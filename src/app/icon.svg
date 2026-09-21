@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <rect width="512" height="512" rx="110" fill="#000000"/>
+  <!-- Stylized HUNTER "H" with tactical cuts and italic slant -->
+  <path d="M160 144 L235 144 L190 280 L230 264 L245 220 L320 220 L275 368 L200 368 L215 324 L175 340 L135 464 L60 464 L160 144 Z M355 144 L430 144 L330 464 L255 464 L355 144 Z" fill="#FFFFFF"/>
+</svg>
