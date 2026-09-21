@@ -17,9 +17,9 @@ export default function Home() {
       <Navbar />
       <Hero />
       <CategoryIcons />
+      <NewArrivals />
       <BestSelling />
       <Categories />
-      <NewArrivals />
       <BrandStory />
       <Testimonials />
       <Footer />
