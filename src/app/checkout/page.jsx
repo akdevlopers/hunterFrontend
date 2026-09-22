@@ -446,6 +446,8 @@ function CheckoutPageContent() {
             : (Number(responseData.final_price) || grandTotal);
 
           const amountInPaise = Math.round(targetPayAmount * 100);
+          
+          
 
           const options = {
             key: rzpKey,
@@ -488,6 +490,8 @@ function CheckoutPageContent() {
               },
             },
           };
+
+          console.log("Razorpay Options:", {options});
 
           const rzp = new window.Razorpay(options);
           rzp.open();

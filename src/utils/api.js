@@ -89,7 +89,7 @@ async function safeJsonParse(response) {
         status: "error",
         status_code: response.status,
         message: text.includes("Internal Server Error")
-          ? "Internal Server Error (500). Please verify backend database logs or payload fields."
+          ? "Pleaase try again later"
           : `Server returned error (${response.status}).`,
       };
     }
