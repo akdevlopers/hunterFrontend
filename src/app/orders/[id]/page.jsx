@@ -92,6 +92,9 @@ export default function OrderDetailPage({ params: paramsPromise }) {
     if (status.includes("ship") || status.includes("pick") || status.includes("transit")) {
       return "bg-blue-100 text-blue-800 border-blue-200";
     }
+    if (status.includes("confirm") || status.includes("process")) {
+      return "bg-indigo-100 text-indigo-800 border-indigo-200";
+    }
     if (status.includes("cancel") || status.includes("fail") || status.includes("reject")) {
       return "bg-rose-100 text-rose-800 border-rose-200";
     }
@@ -111,18 +114,47 @@ export default function OrderDetailPage({ params: paramsPromise }) {
     }
   };
 
-  const orderStatus = order?.product_order_status || (order?.delivered_status === 1 ? "Delivered" : "Placed");
-  const orderStatusLower = orderStatus.toLowerCase();
+  // Map delivery_status codes according to backend specs:
+  // 0 -> Placed & Confirmed
+  // 1 -> Shipped
+  // 4 -> Delivered
+  const rawDeliveryStatus = order?.delivery_status ?? order?.delivered_status;
+  const numDeliveryStatus =
+    rawDeliveryStatus !== undefined && rawDeliveryStatus !== null && rawDeliveryStatus !== ""
+      ? Number(rawDeliveryStatus)
+      : null;
 
+  let orderStatus = "Placed";
   let currentStepIndex = 0;
-  if (orderStatusLower.includes("deliver") || orderStatusLower.includes("complet") || order?.delivery_date || order?.delivered_status === 1) {
+
+  if (numDeliveryStatus === 4) {
+    orderStatus = "Delivered";
     currentStepIndex = 3;
-  } else if (orderStatusLower.includes("ship") || orderStatusLower.includes("transit") || orderStatusLower.includes("pick") || order?.shipped_date) {
+  } else if (numDeliveryStatus === 1) {
+    orderStatus = "Shipped";
     currentStepIndex = 2;
-  } else if (orderStatusLower.includes("confirm") || orderStatusLower.includes("process") || order?.confirmed_date) {
+  } else if (numDeliveryStatus === 0) {
+    orderStatus = "Confirmed";
     currentStepIndex = 1;
   } else {
-    currentStepIndex = 0;
+    // Fallback string matching
+    const strStatus = String(order?.product_order_status || "").toLowerCase();
+    if (strStatus.includes("deliver") || strStatus.includes("complet") || order?.delivery_date) {
+      orderStatus = "Delivered";
+      currentStepIndex = 3;
+    } else if (strStatus.includes("ship") || strStatus.includes("transit") || strStatus.includes("pick") || order?.shipped_date) {
+      orderStatus = "Shipped";
+      currentStepIndex = 2;
+    } else if (strStatus.includes("confirm") || strStatus.includes("process") || order?.confirmed_date) {
+      orderStatus = "Confirmed";
+      currentStepIndex = 1;
+    } else if (strStatus.includes("cancel") || strStatus.includes("fail") || strStatus.includes("reject")) {
+      orderStatus = "Cancelled";
+      currentStepIndex = 0;
+    } else {
+      orderStatus = "Placed";
+      currentStepIndex = 0;
+    }
   }
 
   const trackingSteps = [

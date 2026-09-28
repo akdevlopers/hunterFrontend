@@ -73,6 +73,9 @@ export default function OrderHistoryPage() {
     if (status.includes("ship") || status.includes("pick") || status.includes("transit")) {
       return "bg-blue-100 text-blue-800 border-blue-200";
     }
+    if (status.includes("confirm") || status.includes("process")) {
+      return "bg-indigo-100 text-indigo-800 border-indigo-200";
+    }
     if (status.includes("cancel") || status.includes("fail") || status.includes("reject")) {
       return "bg-rose-100 text-rose-800 border-rose-200";
     }
@@ -169,7 +172,24 @@ export default function OrderHistoryPage() {
           <div className="space-y-4 sm:space-y-6">
             {displayOrders.map((order, idx) => {
               const orderId = order.product_order_id || order.id || `ORD-${idx + 1}`;
-              const orderStatus = order.product_order_status || (order.delivered_status === 1 ? "Delivered" : "Placed");
+              
+              const rawDeliveryStatus = order.delivery_status ?? order.delivered_status;
+              const numDeliveryStatus =
+                rawDeliveryStatus !== undefined && rawDeliveryStatus !== null && rawDeliveryStatus !== ""
+                  ? Number(rawDeliveryStatus)
+                  : null;
+
+              let orderStatus = "Placed";
+              if (numDeliveryStatus === 4) {
+                orderStatus = "Delivered";
+              } else if (numDeliveryStatus === 1) {
+                orderStatus = "Shipped";
+              } else if (numDeliveryStatus === 0) {
+                orderStatus = "Confirmed";
+              } else if (order.product_order_status) {
+                orderStatus = order.product_order_status;
+              }
+
               const rawDate = order.order_date || order.created_at;
               const formattedDate = rawDate
                 ? new Date(rawDate).toLocaleDateString("en-US", {
