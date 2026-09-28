@@ -9,6 +9,7 @@ import {
   FiArrowRight,
   FiArrowLeft,
   FiAlertCircle,
+  FiPackage,
 } from "react-icons/fi";
 import TopBar from "../../../components/TopBar";
 import Navbar from "../../../components/Navbar";
@@ -636,13 +637,25 @@ function CheckoutPageContent() {
               </div>
             )}
 
-            <Link
-              href="/products"
-              className="mt-6 inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition shadow-lg"
-            >
-              <span>Continue Shopping</span>
-              <FiArrowRight />
-            </Link>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              {(orderData?.order_id || orderData?.product_order_id || orderId) && (
+                <Link
+                  href={`/orders/${orderData?.order_id || orderData?.product_order_id || orderId}`}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-indigo-700 transition shadow-lg active:scale-95"
+                >
+                  <FiPackage className="w-4 h-4" />
+                  <span>Track Order</span>
+                </Link>
+              )}
+
+              <Link
+                href="/products"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition shadow-lg active:scale-95"
+              >
+                <span>Continue Shopping</span>
+                <FiArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         ) : (
           /* Structured Checkout Form & Summary Grid */
@@ -727,9 +740,10 @@ function CheckoutPageContent() {
 
                     <div>
                       <label className="block text-xs font-bold text-gray-700 mb-1">
-                        Email Address
+                        Email Address <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         type="email"
                         value={customerInfo.email}
                         onChange={(e) =>
