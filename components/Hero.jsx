@@ -7,18 +7,18 @@ import Link from "next/link";
 const slides = [
   {
     id: 1,
-    image: "/images/banner.jpg",
-    imageMobile: "/images/banner11.png",
+    image: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/bannermobile1.jpeg",
+    imageMobile: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/banner1.png",
   },
   {
     id: 2,
-    image: "/images/banner2.png",
-    imageMobile: "/images/banner22.png",
+    image: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/bannermobile2.png",
+    imageMobile: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/banner_2.png",
   },
   {
     id: 3,
-    image: "/images/banner3.png",
-    imageMobile: "/images/banner33.png",
+    image: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/bannermobile3.png",
+    imageMobile: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/banner_3.png",
   },
 ];
 
