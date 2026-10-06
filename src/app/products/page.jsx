@@ -18,6 +18,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiArrowLeft,
+  FiArrowRight,
 } from "react-icons/fi";
 
 function formatShortSize(sizeStr) {
@@ -87,6 +88,7 @@ function ProductsContent() {
   const [sortBy, setSortBy] = useState("featured");
   const [maxPriceRange, setMaxPriceRange] = useState(3000);
   const [currentPage, setCurrentPage] = useState(initialPageParam);
+  const [jumpPage, setJumpPage] = useState("");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Sync category and page params from URL (e.g. when clicking browser back/forward buttons)
@@ -143,6 +145,16 @@ function ProductsContent() {
     const newPath = newQuery ? `/products?${newQuery}` : `/products`;
     router.replace(newPath, { scroll: false });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Direct Page Jump Submission Handler
+  const handleJumpSubmit = (e) => {
+    e.preventDefault();
+    const target = parseInt(jumpPage, 10);
+    if (!isNaN(target) && target >= 1 && target <= totalPagesCount) {
+      handlePageChange(target);
+      setJumpPage("");
+    }
   };
 
   // Use full categories array returned dynamically from API
@@ -578,52 +590,82 @@ function ProductsContent() {
 
                 {/* Clean Truncated Pagination Controls */}
                 {totalPagesCount > 1 && (
-                  <div className="flex items-center justify-center gap-1 sm:gap-2 mt-12 pt-8 border-t border-gray-100 flex-nowrap overflow-x-auto py-2">
-                    {/* Previous Page Button */}
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
-                    >
-                      <FiChevronLeft className="w-4 h-4" />
-                      <span className="hidden sm:inline">Prev</span>
-                    </button>
+                  <div className="mt-12 pt-8 border-t border-gray-100 relative flex flex-col sm:flex-row items-center justify-center gap-4">
+                    {/* Pagination Buttons Row (Centered) */}
+                    <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto py-1 max-w-full">
+                      {/* Previous Page Button */}
+                      <button
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
+                      >
+                        <FiChevronLeft className="w-4 h-4" />
+                        <span className="hidden sm:inline">Prev</span>
+                      </button>
 
-                    {/* Numbered Page Buttons with Ellipsis */}
-                    {paginationRange.map((item, idx) => {
-                      if (item === "...") {
+                      {/* Numbered Page Buttons with Ellipsis */}
+                      {paginationRange.map((item, idx) => {
+                        if (item === "...") {
+                          return (
+                            <span key={`dots-${idx}`} className="px-1 sm:px-2 text-xs font-bold text-gray-400 select-none flex-shrink-0">
+                              ...
+                            </span>
+                          );
+                        }
+
+                        const isCurrent = currentPage === item;
                         return (
-                          <span key={`dots-${idx}`} className="px-1 sm:px-2 text-xs font-bold text-gray-400 select-none flex-shrink-0">
-                            ...
-                          </span>
+                          <button
+                            key={item}
+                            onClick={() => handlePageChange(item)}
+                            className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full text-xs font-black transition flex-shrink-0 ${
+                              isCurrent
+                                ? "bg-black text-white shadow-md scale-105"
+                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                            }`}
+                          >
+                            {item}
+                          </button>
                         );
-                      }
+                      })}
 
-                      const isCurrent = currentPage === item;
-                      return (
-                        <button
-                          key={item}
-                          onClick={() => handlePageChange(item)}
-                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full text-xs font-black transition flex-shrink-0 ${
-                            isCurrent
-                              ? "bg-black text-white shadow-md scale-105"
-                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                        >
-                          {item}
-                        </button>
-                      );
-                    })}
+                      {/* Next Page Button */}
+                      <button
+                        disabled={currentPage === totalPagesCount}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
+                      >
+                        <span className="hidden sm:inline">Next</span>
+                        <FiChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
 
-                    {/* Next Page Button */}
-                    <button
-                      disabled={currentPage === totalPagesCount}
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
+                    {/* Simplified Minimal Page Jump Input (Right-aligned on Web View, centered on Mobile) */}
+                    <form
+                      onSubmit={handleJumpSubmit}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 font-medium sm:absolute sm:right-0"
                     >
-                      <span className="hidden sm:inline">Next</span>
-                      <FiChevronRight className="w-4 h-4" />
-                    </button>
+                      <span className="text-[11px] font-semibold text-gray-500">Go to:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={totalPagesCount}
+                        value={jumpPage}
+                        onChange={(e) => setJumpPage(e.target.value)}
+                        placeholder={String(currentPage)}
+                        className="w-11 h-7 text-center bg-gray-100 rounded-full text-xs font-bold text-black focus:outline-none focus:ring-1 focus:ring-black transition"
+                      />
+                      <span className="text-[11px] text-gray-400 font-semibold">/ {totalPagesCount}</span>
+                      <button
+                        type="submit"
+                        disabled={!jumpPage || parseInt(jumpPage, 10) < 1 || parseInt(jumpPage, 10) > totalPagesCount}
+                        className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 disabled:opacity-20 transition active:scale-90"
+                        title="Jump to page"
+                        aria-label="Jump to page"
+                      >
+                        <FiArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </form>
                   </div>
                 )}
               </>
