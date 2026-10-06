@@ -25,6 +25,25 @@ import Footer from "../../../components/Footer";
 import MobileBottomNav from "../../../components/MobileBottomNav";
 import { useShop } from "../../context/ShopContext";
 
+function getPaginationRange(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  // When on initial pages (1 to 4): show 1, 2, 3, 4, 5, ..., total
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, "...", total];
+  }
+
+  // When on the last few pages: show 1, ..., total-4, total-3, total-2, total-1, total
+  if (current >= total - 3) {
+    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+  }
+
+  // When in the middle: show 1, ..., current-1, current, current+1, ..., total
+  return [1, "...", current - 1, current, current + 1, "...", total];
+}
+
 export default function OrderHistoryPage() {
   const router = useRouter();
   const {
@@ -359,22 +378,33 @@ export default function OrderHistoryPage() {
 
                   {/* Page Number Buttons */}
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => {
-                          setPage(pageNum);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                        className={`w-8 h-8 rounded-full text-xs font-black transition ${
-                          pageNum === page
-                            ? "bg-black text-white shadow"
-                            : "bg-gray-100 text-black hover:bg-gray-200"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
+                    {getPaginationRange(page, totalPages).map((item, idx) => {
+                      if (item === "...") {
+                        return (
+                          <span key={`dots-${idx}`} className="px-1 text-xs font-bold text-gray-400 select-none">
+                            ...
+                          </span>
+                        );
+                      }
+
+                      const isCurrent = page === item;
+                      return (
+                        <button
+                          key={item}
+                          onClick={() => {
+                            setPage(item);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          className={`w-8 h-8 rounded-full text-xs font-black transition ${
+                            isCurrent
+                              ? "bg-black text-white shadow"
+                              : "bg-gray-100 text-black hover:bg-gray-200"
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <button

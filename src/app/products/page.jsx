@@ -49,69 +49,57 @@ function parseProductSizes(product) {
   return [];
 }
 
-// Smart Pagination Range Helper (Truncates 73+ pages to 1 ... 4 5 6 ... 73)
+// Smart Pagination Range Helper (Shows 1, 2, 3, 4, 5 ... total on start)
 function getPaginationRange(current, total) {
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  const pages = [];
-  pages.push(1);
-
-  if (current > 3) {
-    pages.push("...");
+  // When on initial pages (1 to 4): show 1, 2, 3, 4, 5, ..., total
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, "...", total];
   }
 
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  for (let i = start; i <= end; i++) {
-    if (!pages.includes(i)) {
-      pages.push(i);
-    }
+  // When on the last few pages: show 1, ..., total-4, total-3, total-2, total-1, total
+  if (current >= total - 3) {
+    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
   }
 
-  if (current < total - 2) {
-    pages.push("...");
-  }
-
-  if (!pages.includes(total)) {
-    pages.push(total);
-  }
-
-  return pages;
+  // When in the middle: show 1, ..., current-1, current, current+1, ..., total
+  return [1, "...", current - 1, current, current + 1, "...", total];
 }
 
 function ProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialCategoryParam = searchParams.get("category") || searchParams.get("product_tag") || "";
+  const initialPageParam = Number(searchParams.get("page")) || 1;
 
   const { categories, allApiProducts, bestsellerProducts } = useShop();
 
   const [apiProducts, setApiProducts] = useState([]);
   const [apiCategories, setApiCategories] = useState([]);
-  const [pagination, setPagination] = useState({ current_page: 1, total_products: 0, total_pages: 1 });
+  const [pagination, setPagination] = useState({ current_page: initialPageParam, total_products: 0, total_pages: 1 });
   const [isLoading, setIsLoading] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [maxPriceRange, setMaxPriceRange] = useState(3000);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPageParam);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Sync category param from URL
+  // Sync category and page params from URL (e.g. when clicking browser back/forward buttons)
   useEffect(() => {
-    if (initialCategoryParam) {
-      setSelectedCategory(initialCategoryParam);
+    const pageFromUrl = Number(searchParams.get("page")) || 1;
+    if (pageFromUrl !== currentPage) {
+      setCurrentPage(pageFromUrl);
     }
-  }, [initialCategoryParam]);
-
-  // Reset page to 1 whenever search query or category changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategory]);
+    const catFromUrl = searchParams.get("category") || searchParams.get("product_tag") || "";
+    if (catFromUrl !== selectedCategory) {
+      setSelectedCategory(catFromUrl);
+    }
+  }, [searchParams]);
 
   // Load products & full categories list dynamically from GET /hunter-mens-wear/product-list
   useEffect(() => {
@@ -141,6 +129,22 @@ function ProductsContent() {
     loadProducts();
   }, [currentPage, selectedCategory, maxPriceRange, searchQuery]);
 
+  // Handle Page Change with URL synchronization
+  const handlePageChange = (newPage) => {
+    const targetPage = Math.max(1, newPage);
+    setCurrentPage(targetPage);
+    const params = new URLSearchParams(searchParams.toString());
+    if (targetPage === 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(targetPage));
+    }
+    const newQuery = params.toString();
+    const newPath = newQuery ? `/products?${newQuery}` : `/products`;
+    router.replace(newPath, { scroll: false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Use full categories array returned dynamically from API
   const displayCategoriesList = apiCategories.length > 0 ? apiCategories : categories;
 
@@ -149,6 +153,16 @@ function ProductsContent() {
     const nextCat = String(selectedCategory) === String(catId) ? "" : String(catId);
     setSelectedCategory(nextCat);
     setCurrentPage(1);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    if (nextCat) {
+      params.set("category", nextCat);
+    } else {
+      params.delete("category");
+      params.delete("product_tag");
+    }
+    const newQuery = params.toString();
+    router.replace(newQuery ? `/products?${newQuery}` : `/products`, { scroll: false });
   };
 
   // Clear all filters
@@ -158,6 +172,7 @@ function ProductsContent() {
     setSortBy("featured");
     setMaxPriceRange(3000);
     setCurrentPage(1);
+    router.replace("/products", { scroll: false });
   };
 
   // Sort & Display Dynamic API Products with global search across all catalog products
@@ -563,15 +578,12 @@ function ProductsContent() {
 
                 {/* Clean Truncated Pagination Controls */}
                 {totalPagesCount > 1 && (
-                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-12 pt-8 border-t border-gray-100 flex-wrap">
+                  <div className="flex items-center justify-center gap-1 sm:gap-2 mt-12 pt-8 border-t border-gray-100 flex-nowrap overflow-x-auto py-2">
                     {/* Previous Page Button */}
                     <button
                       disabled={currentPage === 1}
-                      onClick={() => {
-                        setCurrentPage((prev) => Math.max(1, prev - 1));
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                      className="flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
                     >
                       <FiChevronLeft className="w-4 h-4" />
                       <span className="hidden sm:inline">Prev</span>
@@ -581,7 +593,7 @@ function ProductsContent() {
                     {paginationRange.map((item, idx) => {
                       if (item === "...") {
                         return (
-                          <span key={`dots-${idx}`} className="px-2 text-xs font-bold text-gray-400 select-none">
+                          <span key={`dots-${idx}`} className="px-1 sm:px-2 text-xs font-bold text-gray-400 select-none flex-shrink-0">
                             ...
                           </span>
                         );
@@ -591,11 +603,8 @@ function ProductsContent() {
                       return (
                         <button
                           key={item}
-                          onClick={() => {
-                            setCurrentPage(item);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
-                          className={`w-9 h-9 rounded-full text-xs font-black transition ${
+                          onClick={() => handlePageChange(item)}
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full text-xs font-black transition flex-shrink-0 ${
                             isCurrent
                               ? "bg-black text-white shadow-md scale-105"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
@@ -609,11 +618,8 @@ function ProductsContent() {
                     {/* Next Page Button */}
                     <button
                       disabled={currentPage === totalPagesCount}
-                      onClick={() => {
-                        setCurrentPage((prev) => Math.min(totalPagesCount, prev + 1));
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                      className="flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold bg-gray-100 text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-black transition flex-shrink-0"
                     >
                       <span className="hidden sm:inline">Next</span>
                       <FiChevronRight className="w-4 h-4" />
