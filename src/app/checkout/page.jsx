@@ -95,8 +95,6 @@ function CheckoutPageContent() {
   const [statesList, setStatesList] = useState([]);
   const [billingCitiesList, setBillingCitiesList] = useState([]);
   const [shippingCitiesList, setShippingCitiesList] = useState([]);
-  const [paymentMethodsList, setPaymentMethodsList] = useState([]);
-  const [paymentMethodsData, setPaymentMethodsData] = useState(null);
 
   // Load Countries and States for default country
   useEffect(() => {
@@ -121,7 +119,7 @@ function CheckoutPageContent() {
 
   // Country Change Handlers
   const handleBillingCountryChange = async (countryName) => {
-    setBillingAddress((prev) => ({ ...prev, country: countryName, state: "", district: "" }));
+    setBillingAddress((prev) => ({ ...prev, country: countryName, state: "", stateId: "", district: "" }));
     setStatesList([]);
     setBillingCitiesList([]);
     const selectedCountry = countriesList.find((c) => c.name === countryName);
@@ -134,7 +132,7 @@ function CheckoutPageContent() {
   };
 
   const handleShippingCountryChange = async (countryName) => {
-    setShippingAddress((prev) => ({ ...prev, country: countryName, state: "", district: "" }));
+    setShippingAddress((prev) => ({ ...prev, country: countryName, state: "", stateId: "", district: "" }));
     setShippingCitiesList([]);
     const selectedCountry = countriesList.find((c) => c.name === countryName);
     if (selectedCountry?.id) {
@@ -147,8 +145,8 @@ function CheckoutPageContent() {
 
   // State Change Handlers
   const handleBillingStateChange = async (stateName) => {
-    setBillingAddress((prev) => ({ ...prev, state: stateName, district: "" }));
     const selectedSt = statesList.find((s) => s.name === stateName);
+    setBillingAddress((prev) => ({ ...prev, state: stateName, stateId: selectedSt?.id || "", district: "" }));
     if (selectedSt?.id) {
       const res = await fetchCities(selectedSt.id);
       if (res?.status === "success" && Array.isArray(res.cities)) {
@@ -160,8 +158,8 @@ function CheckoutPageContent() {
   };
 
   const handleShippingStateChange = async (stateName) => {
-    setShippingAddress((prev) => ({ ...prev, state: stateName, district: "" }));
     const selectedSt = statesList.find((s) => s.name === stateName);
+    setShippingAddress((prev) => ({ ...prev, state: stateName, stateId: selectedSt?.id || "", district: "" }));
     if (selectedSt?.id) {
       const res = await fetchCities(selectedSt.id);
       if (res?.status === "success" && Array.isArray(res.cities)) {
@@ -177,6 +175,7 @@ function CheckoutPageContent() {
     street: "",
     country: "",
     state: "",
+    stateId: "",
     district: "",
     postalCode: "",
   });
@@ -187,17 +186,13 @@ function CheckoutPageContent() {
     street: "",
     country: "",
     state: "",
+    stateId: "",
     district: "",
     postalCode: "",
   });
 
   // 4. Payment Method State
   const [paymentMethod, setPaymentMethod] = useState("Razorpay");
-
-  // Active payment method details
-  const activePaymentObj = paymentMethodsList.find((pm) => pm.name === paymentMethod);
-  const advanceAmount = Number(activePaymentObj?.advance_amount) || 0;
-  const deliveryPrice = Number(activePaymentObj?.delivery_price) || 0;
 
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
@@ -243,75 +238,70 @@ function CheckoutPageContent() {
         ]
       : cart;
 
-  // Fetch payment methods with product_list payload
+  // Delivery state id (from the address the order ships to) drives shipping charges
+  const activeShippingAddress = shipToDifferentAddress ? shippingAddress : billingAddress;
+  const deliveryStateId = activeShippingAddress.stateId;
+
+  const productListPayload = checkoutItems.map((item) => ({
+    product_id: Number(item.product?.id || item.id || item.product_id || buyNowId || 1),
+    qty: Number(item.quantity || item.qty || 1),
+  }));
+  const productListKey = JSON.stringify(productListPayload);
+
+  // Payment methods / shipping prices from backend (only once a delivery state is selected).
+  // A result is only used when its key matches the current request, so stale responses are ignored.
+  const [pmRefreshKey, setPmRefreshKey] = useState(0);
+  const [pmResult, setPmResult] = useState({ key: "", methods: [], data: null, error: "" });
+  const pmRequestKey =
+    deliveryStateId && productListPayload.length > 0
+      ? `${deliveryStateId}|${productListKey}|${pmRefreshKey}`
+      : "";
+  const pmIsCurrent = Boolean(pmRequestKey) && pmResult.key === pmRequestKey;
+  const pmLoading = Boolean(pmRequestKey) && !pmIsCurrent;
+  const pmError = pmIsCurrent ? pmResult.error : "";
+  const paymentMethodsList = pmIsCurrent ? pmResult.methods : [];
+  const paymentMethodsData = pmIsCurrent ? pmResult.data : null;
+
   useEffect(() => {
+    if (!pmRequestKey) return;
+    let cancelled = false;
+
     async function loadPaymentMethods() {
-      if (!checkoutItems || checkoutItems.length === 0) {
-        const fallback = [
-          {
-            name: "Razorpay",
-            label: "Prepaid",
-            advance_amount: 0,
-            delivery_price: 130,
-          },
-          {
-            name: "Advance_Pay",
-            label: "Advance Pay [Now you will pay the COD shipping amount only , Remaining the product amount you have to pay on delivery time]",
-            advance_amount: 200,
-            delivery_price: 200,
-          },
-        ];
-        setPaymentMethodsList(fallback);
-        setPaymentMethod((prev) => prev || "Razorpay");
+      const pmRes = await fetchPaymentMethods(JSON.parse(productListKey), deliveryStateId);
+
+      // Ignore stale responses (state/cart changed while this request was in flight)
+      if (cancelled) return;
+
+      if (pmRes?.status !== "success" || !Array.isArray(pmRes.payment_methods)) {
+        setPmResult({ key: pmRequestKey, methods: [], data: null, error: pmRes?.message || "Unable to load delivery charges. Please try again." });
         return;
       }
 
-      const productListPayload = checkoutItems.map((item) => ({
-        product_id: Number(item.product?.id || item.id || item.product_id || buyNowId || 1),
-        qty: Number(item.quantity || item.qty || 1),
-      }));
-
-      const pmRes = await fetchPaymentMethods(productListPayload);
-      let pms = [];
-      if (pmRes?.status === "success" && Array.isArray(pmRes.payment_methods) && pmRes.payment_methods.length > 0) {
-        setPaymentMethodsData(pmRes);
-        pms = pmRes.payment_methods.filter(
-          (p) => p.name !== "COD" && p.name !== "Cash on Delivery" && !p.name?.toLowerCase().includes("cash on delivery")
-        );
-      }
-
+      const pms = pmRes.payment_methods.filter(
+        (p) => p.name !== "COD" && p.name !== "Cash on Delivery" && !p.name?.toLowerCase().includes("cash on delivery")
+      );
       if (pms.length === 0) {
-        pms = [
-          {
-            name: "Razorpay",
-            label: "Prepaid",
-            advance_amount: 0,
-            delivery_price: 130,
-          },
-          {
-            name: "Advance_Pay",
-            label: "Advance Pay [Now you will pay the COD shipping amount only , Remaining the product amount you have to pay on delivery time]",
-            advance_amount: 200,
-            delivery_price: 200,
-          },
-        ];
+        setPmResult({ key: pmRequestKey, methods: [], data: null, error: "No payment methods are available for this order." });
+        return;
       }
 
-      setPaymentMethodsList(pms);
+      setPmResult({ key: pmRequestKey, methods: pms, data: pmRes, error: "" });
       setPaymentMethod((prev) => {
         const found = pms.some((m) => m.name === prev);
-        return found ? prev : (pms[0]?.name || "Razorpay");
+        return found ? prev : pms[0].name;
       });
     }
 
     loadPaymentMethods();
-  }, [
-    isBuyNow,
-    buyNowId,
-    buyNowQty,
-    cart.length,
-    JSON.stringify(cart.map((c) => ({ id: c.product?.id || c.id, qty: c.quantity }))),
-  ]);
+    return () => {
+      cancelled = true;
+    };
+  }, [pmRequestKey, productListKey, deliveryStateId]);
+
+  // Active payment method details
+  const activePaymentObj = paymentMethodsList.find((pm) => pm.name === paymentMethod);
+  const advanceAmount = Number(activePaymentObj?.advance_amount) || 0;
+  const deliveryPrice = Number(activePaymentObj?.delivery_price) || 0;
 
   // Price Calculation
   const subtotal = checkoutItems.reduce(
@@ -319,16 +309,19 @@ function CheckoutPageContent() {
     0
   );
   const tax = 0;
-  const shippingCharge = deliveryPrice || 0;
-  const grandTotal = Math.max(0, subtotal - couponDiscount + tax + shippingCharge);
+  const grandTotal = Math.max(0, subtotal - couponDiscount + tax + deliveryPrice);
+  const canPlaceOrder = Boolean(deliveryStateId) && !pmLoading && Boolean(activePaymentObj);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    if (!canPlaceOrder) return;
     setIsSubmitting(true);
     setOrderApiError("");
 
-    const activeShipping = shipToDifferentAddress ? shippingAddress : billingAddress;
+    const activeShipping = activeShippingAddress;
     const isAdvancePay = paymentMethod === "Advance_Pay" || paymentMethod.toLowerCase().includes("advance");
+    // Must exactly match the backend's price for the selected method
+    const shippingPrice = deliveryPrice;
 
     // Asynchronously resolve real database variant_id for each cart item
     const resolvedProductList = await Promise.all(
@@ -391,10 +384,10 @@ function CheckoutPageContent() {
       delivery_price: deliveryPrice,
       total_weight: paymentMethodsData?.total_weight || 0,
       cartlist: {
-        total_final_price: isAdvancePay ? (subtotal - couponDiscount + tax + deliveryPrice) : grandTotal,
+        total_final_price: subtotal + shippingPrice + tax,
         total_sub_price: subtotal,
         tax_price: tax,
-        shipping_price: isAdvancePay ? advanceAmount : shippingCharge,
+        shipping_price: shippingPrice,
         advance_amount: advanceAmount,
         advance_price: advanceAmount,
         delivery_price: deliveryPrice,
@@ -417,7 +410,7 @@ function CheckoutPageContent() {
         delivery_city: activeShipping.district,
         delivery_postcode: activeShipping.postalCode,
         delivery_country: activeShipping.country,
-        delivery_state: activeShipping.state,
+        delivery_state: Number(deliveryStateId),
       },
     };
 
@@ -521,10 +514,13 @@ function CheckoutPageContent() {
         if (!isBuyNow) clearCart();
       } else {
         setOrderApiError(res?.message || "Failed to process order. Please try again.");
+        // Refresh prices so the customer can review and retry (never auto-retry)
+        setPmRefreshKey((k) => k + 1);
       }
     } catch (err) {
       console.error("Order submit error:", err);
       setOrderApiError(err.message || "An unexpected error occurred while placing your order.");
+      setPmRefreshKey((k) => k + 1);
     } finally {
       setIsSubmitting(false);
     }
@@ -985,7 +981,29 @@ function CheckoutPageContent() {
                 </h2>
 
                 <div className="p-4 sm:p-6 bg-gray-50/70 rounded-2xl border border-gray-200/80 space-y-3">
-                  {paymentMethodsList.map((pm) => (
+                  {!deliveryStateId && (
+                    <p className="text-xs sm:text-sm font-semibold text-gray-500">
+                      Select your state to see delivery charges
+                    </p>
+                  )}
+                  {deliveryStateId && pmLoading && (
+                    <p className="text-xs sm:text-sm font-semibold text-gray-500">
+                      Loading delivery charges...
+                    </p>
+                  )}
+                  {deliveryStateId && !pmLoading && pmError && (
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-xs sm:text-sm font-semibold text-red-600">{pmError}</p>
+                      <button
+                        type="button"
+                        onClick={() => setPmRefreshKey((k) => k + 1)}
+                        className="text-xs font-bold uppercase tracking-wider text-black hover:text-gray-600 transition"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                  {!pmLoading && paymentMethodsList.map((pm) => (
                     <label
                       key={pm.name}
                       onClick={() => setPaymentMethod(pm.name)}
@@ -1121,10 +1139,17 @@ function CheckoutPageContent() {
                   </div> */}
 
                   {/* Show Shipping Amount for Prepaid and Advance Pay */}
-                  {deliveryPrice > 0 && (
+                  {activePaymentObj && !pmLoading ? (
                     <div className="flex justify-between">
                       <span>Shipping Amount</span>
                       <span className="font-extrabold text-black">₹{deliveryPrice.toLocaleString("en-IN")}</span>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between">
+                      <span>Shipping Amount</span>
+                      <span className="text-gray-500">
+                        {!deliveryStateId ? "Select your state to see delivery charges" : pmLoading ? "Calculating..." : "—"}
+                      </span>
                     </div>
                   )}
 
@@ -1154,7 +1179,7 @@ function CheckoutPageContent() {
                 {/* Complete Order Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !canPlaceOrder}
                   className="w-full bg-black text-white py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
