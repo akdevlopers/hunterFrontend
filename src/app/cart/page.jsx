@@ -73,10 +73,9 @@ function CartPageContent() {
     (total, item) => total + item.price * item.quantity,
     0
   );
-  const freeShippingThreshold = 60;
-  const shipping = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 12;
+  // Shipping is calculated by the backend at checkout (depends on delivery state)
   const finalDiscountAmount = (subtotal * discount) / 100;
-  const grandTotal = Math.max(0, subtotal - finalDiscountAmount + shipping);
+  const grandTotal = Math.max(0, subtotal - finalDiscountAmount);
 
   const handleApplyPromo = (e) => {
     e.preventDefault();
