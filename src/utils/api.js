@@ -324,9 +324,10 @@ export async function fetchCities(stateId) {
 /**
  * Fetch Order Payment Methods List
  * Endpoint: POST /customer/order/payment-methods
- * Payload: { "product_list": [ { "product_id": 21, "qty": 10 } ] }
+ * Payload: { "product_list": [ { "product_id": 21, "qty": 10 } ], "delivery_state": 4028 }
+ * delivery_state is the state id from fetchStates (required by backend).
  */
-export async function fetchPaymentMethods(productList = []) {
+export async function fetchPaymentMethods(productList = [], deliveryState) {
   try {
     let list = [];
     if (Array.isArray(productList)) {
@@ -347,6 +348,7 @@ export async function fetchPaymentMethods(productList = []) {
 
     const payload = {
       product_list: list,
+      delivery_state: Number(deliveryState),
     };
 
     const response = await fetch(`${BASE_URL}/customer/order/payment-methods`, {
@@ -364,23 +366,8 @@ export async function fetchPaymentMethods(productList = []) {
     console.error("Fetch Payment Methods Error:", error);
     return {
       status: "error",
-      total_weight: 0,
-      delivery_price: 130,
-      advance_amount: 0,
-      payment_methods: [
-        {
-          name: "Razorpay",
-          label: "Prepaid",
-          advance_amount: 0,
-          delivery_price: 130,
-        },
-        {
-          name: "Advance_Pay",
-          label: "Advance Pay [Now You will pay Shipping Amount.Balance will pay on Delivery]",
-          advance_amount: 200,
-          delivery_price: 200,
-        },
-      ],
+      message: error.message || "Failed to load delivery charges.",
+      payment_methods: [],
     };
   }
 }
