@@ -116,7 +116,7 @@ export default function SupportPage() {
               <FiPhone className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <h3 className="text-xs sm:text-sm font-extrabold text-black uppercase">Phone Assistance</h3>
-            <p className="text-[11px] sm:text-xs text-gray-500 mt-1 font-semibold">+91 94878 26087</p>
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-1 font-semibold">+91 82201 01896</p>
           </a>
 
           <a
