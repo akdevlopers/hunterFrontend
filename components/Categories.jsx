@@ -7,9 +7,9 @@ import { useShop } from "../src/context/ShopContext";
 
 // Custom Static Images for Top Categories (change image paths here as needed)
 const STATIC_CATEGORY_IMAGES = {
-  "T-Shirt": "/images/boxy.jpeg",
-  "Jean": "/images/cargo.jpeg",
-  "Shirt": "/images/shirt.jpeg",
+  "T-Shirt": "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/box-15kb.jpeg",
+  "Jean": "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/cargo.jpeg",
+  "Shirt": "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/shirt.jpeg",
 };
 
 export default function Categories() {

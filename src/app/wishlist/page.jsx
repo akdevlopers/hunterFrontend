@@ -166,7 +166,7 @@ export default function WishlistPage() {
                 >
                   {/* Image Container */}
                   <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#f6f6f6]">
-                    <Link href={productUrl} className="block w-full h-full">
+                    <Link prefetch={false} href={productUrl} className="block w-full h-full">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -205,7 +205,7 @@ export default function WishlistPage() {
                   </div>
 
                   {/* Info */}
-                  <Link href={productUrl} className="flex justify-between items-start pt-3 px-1">
+                  <Link prefetch={false} href={productUrl} className="flex justify-between items-start pt-3 px-1">
                     <div>
                       <h3 className="text-xs sm:text-sm font-extrabold text-black line-clamp-1 group-hover:underline">
                         {product.name}

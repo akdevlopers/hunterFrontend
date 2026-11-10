@@ -57,7 +57,7 @@ export default function BrandStory() {
             <ScrollReveal direction="up" delay={150}>
               <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-gray-200 h-[260px] sm:h-[360px] lg:h-[490px] w-full bg-gray-900 group">
                 <Image
-                  src="/images/brand-story.jpeg"
+                  src="https://d198l0yp2i7sp9.cloudfront.net/uploads/6/brand-story.jpeg"
                   alt="Hunter Clothing Brand Story"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"

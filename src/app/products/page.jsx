@@ -542,6 +542,7 @@ function ProductsContent() {
                       <Link
                         key={product.id}
                         href={`/products/${targetSlug}`}
+                        prefetch={false}
                         className="group cursor-pointer flex flex-col rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white border border-gray-100 p-2 sm:p-2.5"
                       >
                         <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#f6f6f6] flex items-center justify-center">

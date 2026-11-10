@@ -840,6 +840,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                   <Link
                     key={rel.id}
                     href={`/products/${rel.slug || rel.id}`}
+                    prefetch={false}
                     className="group cursor-pointer flex flex-col rounded-2xl bg-white border border-gray-100 p-2.5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl w-full lg:w-[270px] lg:flex-shrink-0 lg:snap-start"
                   >
                     <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#f6f6f6] flex items-center justify-center">

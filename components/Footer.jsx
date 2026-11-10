@@ -12,7 +12,7 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 space-y-4">
-            <Link href="/" className="relative h-8 sm:h-10 w-36 sm:w-48 block">
+            <Link prefetch={false} href="/" className="relative h-8 sm:h-10 w-36 sm:w-48 block">
               <Image
                 src="/images/logo.png"
                 alt="HUNTER Logo"
@@ -43,10 +43,10 @@ export default function Footer() {
               Shop Categories
             </h3>
             <ul className="space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-gray-400">
-              <li><Link href="/products" className="hover:text-white transition">All Streetwear</Link></li>
-              <li><Link href="/products?category=4" className="hover:text-white transition">T-Shirt</Link></li>
-              <li><Link href="/products?category=19" className="hover:text-white transition">Zipper Jacket</Link></li>
-              <li><Link href="/products?category=23" className="hover:text-white transition">Shorts</Link></li>
+              <li><Link prefetch={false} href="/products" className="hover:text-white transition">All Streetwear</Link></li>
+              <li><Link prefetch={false} href="/products?category=4" className="hover:text-white transition">T-Shirt</Link></li>
+              <li><Link prefetch={false} href="/products?category=19" className="hover:text-white transition">Zipper Jacket</Link></li>
+              <li><Link prefetch={false} href="/products?category=23" className="hover:text-white transition">Shorts</Link></li>
             </ul>
           </div>
 
@@ -77,7 +77,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/support" className="hover:text-white transition">
+                <Link prefetch={false} href="/support" className="hover:text-white transition">
                   Contact Us
                 </Link>
               </li>
@@ -90,10 +90,10 @@ export default function Footer() {
               My Account
             </h3>
             <ul className="space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-gray-400">
-              <li><Link href="/account" className="hover:text-white transition">My Profile</Link></li>
-              <li><Link href="/orders" className="hover:text-white transition">Order History</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition">Terms & Conditions</Link></li>
+              <li><Link prefetch={false} href="/account" className="hover:text-white transition">My Profile</Link></li>
+              <li><Link prefetch={false} href="/orders" className="hover:text-white transition">Order History</Link></li>
+              <li><Link prefetch={false} href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+              <li><Link prefetch={false} href="/terms" className="hover:text-white transition">Terms & Conditions</Link></li>
             </ul>
           </div>
 

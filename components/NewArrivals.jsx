@@ -93,7 +93,7 @@ export default function NewArrivals() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {productsToDisplay.map((item, idx) => (
           <ScrollReveal key={item.id} direction="up" delay={50 * (idx + 1)}>
-            <Link href={`/products/${item.slug || item.id}`} className="group cursor-pointer flex flex-col transition-all duration-500 hover:-translate-y-2">
+            <Link prefetch={false} href={`/products/${item.slug || item.id}`} className="group cursor-pointer flex flex-col transition-all duration-500 hover:-translate-y-2">
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#f6f6f6] flex items-center justify-center">
                 {item.image && (
                   <img

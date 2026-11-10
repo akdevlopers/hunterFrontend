@@ -236,6 +236,7 @@ export default function OrderHistoryPage() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <Link
                             href={`/orders/${order.id || order.product_order_id}`}
+                            prefetch={false}
                             className="text-xs sm:text-sm font-black text-black uppercase tracking-wider hover:underline hover:text-purple-700 transition"
                           >
                             Order #{order.product_order_id || order.id}
@@ -314,6 +315,7 @@ export default function OrderHistoryPage() {
                           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
                             <Link
                               href={`/orders/${order.id || order.product_order_id}`}
+                              prefetch={false}
                               className="inline-flex items-center gap-1 bg-gray-100 hover:bg-black hover:text-white text-black border border-gray-200 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition active:scale-95 shadow-sm"
                             >
                               <span>View Details</span>
