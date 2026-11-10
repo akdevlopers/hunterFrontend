@@ -18,10 +18,10 @@ export const metadata = {
   description: "HUNTER streetwear collection - Born in the streets, engineered for men's urban culture.",
   icons: {
     icon: [
-      { url: "/images/hunter-icon.png", href: "/images/hunter-icon.png" },
+      { url: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg", href: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg" },
     ],
-    shortcut: "/images/hunter-icon.png",
-    apple: "/images/hunter-icon.png",
+    shortcut: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg",
+    apple: "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg",
   },
 };
 
