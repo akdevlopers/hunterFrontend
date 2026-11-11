@@ -21,7 +21,7 @@ export default function Categories() {
     // Check static image map first or fallback to API image
     const customStaticImg = STATIC_CATEGORY_IMAGES[cat.name] || STATIC_CATEGORY_IMAGES[Object.keys(STATIC_CATEGORY_IMAGES).find(k => k.toLowerCase() === (cat.name || "").toLowerCase())];
     const apiImg = cat.image_url || cat.icon_path;
-    const finalImage = customStaticImg || (apiImg ? (apiImg.startsWith("http") ? apiImg : `https://meetay.com/${apiImg}`) : "/images/banner.jpg");
+    const finalImage = customStaticImg || (apiImg ? (apiImg.startsWith("http") ? apiImg : `https://meetay.com/${apiImg}`) : "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg");
 
     return {
       id: cat.id,

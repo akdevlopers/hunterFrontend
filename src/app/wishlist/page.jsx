@@ -38,7 +38,7 @@ export default function WishlistPage() {
         if (!seen.has(key)) {
           seen.add(key);
           const rawPrice = resolved.sale_price || resolved.price || 0;
-          const imgUrl = resolved.cover_image_url || (resolved.cover_image_path ? `https://meetay.com/${resolved.cover_image_path}` : resolved.image || "/images/banner.jpg");
+          const imgUrl = resolved.cover_image_url || (resolved.cover_image_path ? `https://meetay.com/${resolved.cover_image_path}` : resolved.image || "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg");
           const cat = (resolved.category || resolved.category_name || resolved.name || "").toLowerCase();
 
           let categorySizes = [];

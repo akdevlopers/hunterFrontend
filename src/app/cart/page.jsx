@@ -205,7 +205,7 @@ function CartPageContent() {
                       ? item.product.cover_image_path.startsWith("http")
                         ? item.product.cover_image_path
                         : `https://meetay.com/${item.product.cover_image_path}`
-                      : "/images/banner.jpg");
+                      : "https://d198l0yp2i7sp9.cloudfront.net/uploads/6/hunter-icon.jpeg");
 
                   return (
                     <div
