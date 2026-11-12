@@ -69,6 +69,8 @@ export default function Categories() {
                 {featuredCategory.image && (
                   <img
                     src={featuredCategory.image}
+                    loading="lazy"
+                    decoding="async"
                     alt={featuredCategory.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
@@ -111,6 +113,8 @@ export default function Categories() {
                   {item.image && (
                     <img
                       src={item.image}
+                      loading="lazy"
+                      decoding="async"
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />

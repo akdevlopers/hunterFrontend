@@ -98,6 +98,8 @@ export default function BestSelling() {
                 {item.image && (
                   <img
                     src={item.image}
+                    loading="lazy"
+                    decoding="async"
                     alt={item.name}
                     className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   />

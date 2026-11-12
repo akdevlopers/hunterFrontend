@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
+// Each slide has desktop (sm and up) and mobile artwork. A <picture> element
+// lets the browser download only the variant it will show, and a slide's
+// images are only mounted once it is showing or queued next, so the first
+// paint is not competing with banners the visitor cannot see yet.
 const slides = [
   {
     id: 1,
@@ -22,15 +25,23 @@ const slides = [
   },
 ];
 
+const SLIDE_INTERVAL_MS = 4000;
+// Matches Tailwind's `sm` breakpoint, where the layout switches to the desktop banner.
+const DESKTOP_MEDIA = "(min-width: 640px)";
+
 export default function Hero() {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  // Counts carousel advances. The carousel only moves forward, so every slide
+  // up to `tick + 1` has either been shown or is the one coming next.
+  const [tick, setTick] = useState(0);
+  const currentSlide = tick % slides.length;
+  const mountedUpTo = Math.min(tick + 1, slides.length - 1);
   const marqueeItems = Array(12).fill("YOUR NEXT FIT IS SOMEWHERE HERE • BE READY TO HUNT ");
 
   // Auto-play carousel smoothly every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000);
+      setTick((prev) => prev + 1);
+    }, SLIDE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
 
@@ -47,25 +58,19 @@ export default function Hero() {
                 index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
               }`}
             >
-              {/* Desktop View Image */}
-              <Image
-                src={slide.image}
-                alt={`Hero Slide Desktop ${slide.id}`}
-                fill
-                priority={index === 0}
-                sizes="(max-width: 1400px) 100vw, 1400px"
-                className="hidden sm:block object-cover object-center animate-hero-zoom"
-              />
-
-              {/* Mobile View Image (Natural 4:3 Widescreen Aspect Ratio) */}
-              <Image
-                src={slide.imageMobile || slide.image}
-                alt={`Hero Slide Mobile ${slide.id}`}
-                fill
-                priority={index === 0}
-                sizes="100vw"
-                className="sm:hidden object-cover object-center animate-hero-zoom"
-              />
+              {index <= mountedUpTo && (
+                <picture>
+                  <source media={DESKTOP_MEDIA} srcSet={slide.image} />
+                  <img
+                    src={slide.imageMobile || slide.image}
+                    alt={`Hero slide ${slide.id}`}
+                    fetchPriority={index === 0 ? "high" : "low"}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center animate-hero-zoom"
+                  />
+                </picture>
+              )}
             </div>
           ))}
 

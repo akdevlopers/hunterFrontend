@@ -167,7 +167,7 @@ export default function Testimonials() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 sm:gap-6 pb-4 sm:pb-6 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth"
+        className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 sm:gap-6 pb-4 sm:pb-6 scrollbar-none -mx-4 px-4 scroll-px-4 sm:mx-0 sm:px-0 sm:scroll-px-0 scroll-smooth"
       >
         {reviews.map((item) => (
           <div

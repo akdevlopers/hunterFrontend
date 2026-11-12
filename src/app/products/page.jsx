@@ -532,7 +532,7 @@ function ProductsContent() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {displayedProducts.map((product) => {
+                  {displayedProducts.map((product, productIdx) => {
                     const imgUrl = product.cover_image_url || (product.cover_image_path ? `https://meetay.com/${product.cover_image_path}` : null);
                     const priceFormatted = `₹${(product.sale_price || product.price || 0).toLocaleString("en-IN")}`;
                     const targetSlug = product.slug || product.id;
@@ -549,6 +549,8 @@ function ProductsContent() {
                           {imgUrl && (
                             <img
                               src={imgUrl}
+                              loading={productIdx < 4 ? "eager" : "lazy"}
+                              decoding="async"
                               alt={product.name}
                               className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                             />

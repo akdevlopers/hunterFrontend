@@ -431,6 +431,8 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                 <img
                   key={activeDisplayImage}
                   src={activeDisplayImage}
+                  fetchPriority="high"
+                  decoding="async"
                   alt={liveProduct.name || "Product"}
                   className="w-full h-full object-cover object-center transition-all duration-500 sm:scale-105"
                 />
@@ -535,6 +537,8 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                       >
                         <img
                           src={imgItemUrl}
+                          loading="lazy"
+                          decoding="async"
                           alt={`${liveProduct.name || "Product"} thumbnail ${idx + 1}`}
                           className="w-full h-full object-contain object-center p-1 pointer-events-none"
                         />
@@ -847,6 +851,8 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                       {relImg ? (
                         <img
                           src={relImg}
+                          loading="lazy"
+                          decoding="async"
                           alt={rel.name || "Product"}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />

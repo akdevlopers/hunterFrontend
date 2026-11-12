@@ -1,0 +1,12 @@
+# Amplify Hosting custom headers (applied at the CDN edge).
+# First-party static files otherwise go out with max-age=5, so browsers
+# re-download the logo and favicon on every visit.
+customHeaders:
+  - pattern: '/images/*'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=2592000'
+  - pattern: '/favicon.ico'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=2592000'
